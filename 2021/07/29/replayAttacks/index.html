@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 重放攻击（Replay Attacks） · pan pan's blog</title><meta name="description" content="重放攻击（Replay Attacks） - pan pan"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://sugar-mm.github.io/atom.xml" title="pan pan's blog"><meta name="generator" content="Hexo 5.4.0"><link rel="alternate" href="/atom.xml" title="pan pan's blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/Sugar-MM" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/reveal.js/index.html" target="_self" class="nav-list-link">TEMP</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">重放攻击（Replay Attacks）</h1><div class="post-info">Jul 29, 2021</div><div class="post-content"><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p><strong>官方解释：</strong>重放攻击(Replay Attacks)又称重播攻击、回放攻击，是指攻击者发送一个目的主机已接收过的包，来达到欺骗系统的目的，主要用于身份认证过程，破坏认证的正确性。重放攻击可以由发起者，也可以由拦截并重发该数据的敌方进行。攻击者利用网络监听或者其他方式盗取认证凭据，之后再把它重新发给认证服务器。重放攻击在任何网络通过程中都可能发生，是计算机世界黑客常用的攻击方式之一。</p>
+<p><strong>自己理解</strong>：顾名思义，重复的会话请求就是重放攻击。可能是用户自己重复向服务器发起的请求，也有可能是因为请求被攻击者拦截获取，然后重新发送给服务器。</p>
+<h3 id="防御手段"><a href="#防御手段" class="headerlink" title="防御手段"></a>防御手段</h3><p>防止重放攻击的方法是使用不重数。</p>
+<ol>
+<li><p>加随机数：</p>
+<p> 该方法优点是认证双方不需要时间同步，双方记住使用过的随机数，如发现报文中有以前使用过的随机数，就认为是重放攻击。缺点是需要额外保存使用过的随机数，若记录的时间段较长，则保存和查询的开销较大</p>
+</li>
+<li><p>加时间戳：</p>
+<p> 该方法优点是不用额外保存其他信息。缺点是认证双方需要准确的时间同步，同步越好，受攻击的可能性就越小。但当系统很庞大，跨越的区域较广时，要做到精确的时间同步并不是很容易。</p>
+</li>
+<li><p>加流水号：</p>
+<p> 就是双方在报文中添加一个逐步递增的整数，只要接收到一个不连续的流水号报文(太大或太小)，就认定有重放威胁。该方法优点是不需要时间同步，保存的信息量比随机数方式小。缺点是一旦攻击者对报文解密成功，就可以获得流水号，从而每次将流水号递增欺骗认证端。</p>
+</li>
+</ol>
+</div></article></div></main><footer><div class="paginator"><a href="/2021/07/29/SameOriginPolicy/" class="prev">PREV</a><a href="/2021/07/28/inode/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2021 <a href="https://sugar-mm.github.io">pan pan</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
