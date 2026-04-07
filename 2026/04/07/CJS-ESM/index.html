@@ -1,0 +1,191 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title>  · 梦鸽的博客</title><meta name="description" content=" - kong ling meng"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://sugar-mm.github.io/atom.xml" title="梦鸽的博客"><meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="梦鸽的博客" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="https://github.com/pinggod" target="_blank" class="nav-list-link">GITHUB</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title"></h1><div class="post-info">2026年4月7日</div><div class="post-content"><h1 id="CommonJS-vs-ESM（JavaScript-模块化详解）"><a href="#CommonJS-vs-ESM（JavaScript-模块化详解）" class="headerlink" title="CommonJS vs ESM（JavaScript 模块化详解）"></a>CommonJS vs ESM（JavaScript 模块化详解）</h1><p>JavaScript 代码规模增大后，需要一种机制来<strong>拆分文件、管理依赖、复用代码</strong>，这就是 <strong>模块化（Module System）</strong>。</p>
+<p>目前 JavaScript 主要有两种模块规范：</p>
+<ul>
+<li>  <strong>CommonJS（CJS）</strong></li>
+<li>  <strong>ECMAScript Modules（ESM）</strong></li>
+</ul>
+<hr>
+<h1 id="一、CommonJS（CJS）"><a href="#一、CommonJS（CJS）" class="headerlink" title="一、CommonJS（CJS）"></a>一、CommonJS（CJS）</h1><p>CommonJS 是 <strong>Node.js 早期使用的模块规范</strong>。</p>
+<p>在 ES6 模块化出现之前，Node.js 使用 CommonJS 解决模块化问题。</p>
+<h2 id="1-导出模块"><a href="#1-导出模块" class="headerlink" title="1 导出模块"></a>1 导出模块</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  add,</span><br><span class="line">  sub</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>或</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">exports</span>.add = add</span><br></pre></td></tr></table></figure>
+
+<p>tips：</p>
+<ul>
+<li>  <code>module.exports</code> 是真正的导出对象</li>
+<li>  <code>exports</code> 只是 <code>module.exports</code> 的引用</li>
+</ul>
+<hr>
+<h2 id="2-导入模块"><a href="#2-导入模块" class="headerlink" title="2 导入模块"></a>2 导入模块</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> math = <span class="built_in">require</span>(<span class="string">&#x27;./math&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>tips：<br><code>require()</code> 会加载模块并返回 <code>module.exports</code>。</p>
+<hr>
+<h2 id="3-CommonJS-特点"><a href="#3-CommonJS-特点" class="headerlink" title="3 CommonJS 特点"></a>3 CommonJS 特点</h2><h3 id="1️⃣-同步加载"><a href="#1️⃣-同步加载" class="headerlink" title="1️⃣ 同步加载"></a>1️⃣ 同步加载</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="built_in">module</span> = <span class="built_in">require</span>(<span class="string">&#x27;./module&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>加载流程：</p>
+<pre><code>读取文件
+↓
+执行文件
+↓
+返回 exports
+</code></pre>
+<p>特点：</p>
+<ul>
+<li>  同步执行</li>
+<li>  适合服务器环境</li>
+</ul>
+<hr>
+<h3 id="2️⃣-运行时加载"><a href="#2️⃣-运行时加载" class="headerlink" title="2️⃣ 运行时加载"></a>2️⃣ 运行时加载</h3><p><code>require()</code> 本质是函数，因此可以动态执行。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (condition) &#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="built_in">module</span> = <span class="built_in">require</span>(<span class="string">&#x27;./module&#x27;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="3️⃣-值拷贝"><a href="#3️⃣-值拷贝" class="headerlink" title="3️⃣ 值拷贝"></a>3️⃣ 值拷贝</h3><p>CommonJS 导出的是 <strong>值的拷贝</strong>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// a.js</span></span><br><span class="line"><span class="keyword">let</span> count = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  count</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// b.js</span></span><br><span class="line"><span class="keyword">const</span> &#123; count &#125; = <span class="built_in">require</span>(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(count)</span><br></pre></td></tr></table></figure>
+
+<p>如果 <code>a.js</code> 里的 <code>count</code> 改变：</p>
+<pre><code>b.js 不会自动更新
+</code></pre>
+<hr>
+<h3 id="4️⃣-模块缓存"><a href="#4️⃣-模块缓存" class="headerlink" title="4️⃣ 模块缓存"></a>4️⃣ 模块缓存</h3><p>Node.js 会缓存加载过的模块。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">require</span>(<span class="string">&#x27;./a&#x27;</span>)</span><br><span class="line"><span class="built_in">require</span>(<span class="string">&#x27;./a&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>模块只会执行一次。</p>
+<p>缓存机制：</p>
+<pre><code>Module Cache
+</code></pre>
+<hr>
+<h1 id="二、ESM（ECMAScript-Modules）"><a href="#二、ESM（ECMAScript-Modules）" class="headerlink" title="二、ESM（ECMAScript Modules）"></a>二、ESM（ECMAScript Modules）</h1><p>ESM 是 <strong>ES6（2015）官方模块化规范</strong>。</p>
+<p>现在浏览器和 Node.js 都支持。</p>
+<hr>
+<h2 id="1-导出模块-1"><a href="#1-导出模块-1" class="headerlink" title="1 导出模块"></a>1 导出模块</h2><h3 id="命名导出"><a href="#命名导出" class="headerlink" title="命名导出"></a>命名导出</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> add = <span class="function">() =&gt;</span> &#123;&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> sub = <span class="function">() =&gt;</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="默认导出"><a href="#默认导出" class="headerlink" title="默认导出"></a>默认导出</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params"></span>) </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="2-导入模块-1"><a href="#2-导入模块-1" class="headerlink" title="2 导入模块"></a>2 导入模块</h2><h3 id="命名导入"><a href="#命名导入" class="headerlink" title="命名导入"></a>命名导入</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; add &#125; <span class="keyword">from</span> <span class="string">&#x27;./math.js&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="默认导入"><a href="#默认导入" class="headerlink" title="默认导入"></a>默认导入</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> add <span class="keyword">from</span> <span class="string">&#x27;./math.js&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="全部导入"><a href="#全部导入" class="headerlink" title="全部导入"></a>全部导入</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> math <span class="keyword">from</span> <span class="string">&#x27;./math.js&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="3-ESM-特点"><a href="#3-ESM-特点" class="headerlink" title="3 ESM 特点"></a>3 ESM 特点</h2><h3 id="1️⃣-静态分析（编译时解析）"><a href="#1️⃣-静态分析（编译时解析）" class="headerlink" title="1️⃣ 静态分析（编译时解析）"></a>1️⃣ 静态分析（编译时解析）</h3><p>ESM 的依赖关系在 <strong>编译阶段就能确定</strong>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; add &#125; <span class="keyword">from</span> <span class="string">&#x27;./math&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>限制：</p>
+<ul>
+<li>  必须写在顶层</li>
+<li>  不能写在 if / for / function 中</li>
+</ul>
+<p>错误示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">  <span class="keyword">import</span> &#123; add &#125; <span class="keyword">from</span> <span class="string">&#x27;./math&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="2️⃣-异步加载"><a href="#2️⃣-异步加载" class="headerlink" title="2️⃣ 异步加载"></a>2️⃣ 异步加载</h3><p>浏览器加载模块时，并行下载模块，适合前端环境。</p>
+<hr>
+<h3 id="3️⃣-实时绑定（引用）"><a href="#3️⃣-实时绑定（引用）" class="headerlink" title="3️⃣ 实时绑定（引用）"></a>3️⃣ 实时绑定（引用）</h3><p>ESM 导出的是 <strong>引用（Live Binding）</strong>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// a.js</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">let</span> count = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">setTimeout</span>(<span class="function">() =&gt;</span> &#123;</span><br><span class="line">  count++</span><br><span class="line">&#125;, <span class="number">1000</span>)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// b.js</span></span><br><span class="line"><span class="keyword">import</span> &#123; count &#125; <span class="keyword">from</span> <span class="string">&#x27;./a&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(count)</span><br></pre></td></tr></table></figure>
+
+<p><code>count</code> 会随着 <code>a.js</code> 的变化而变化。</p>
+<hr>
+<h3 id="4️⃣-支持-Tree-Shaking"><a href="#4️⃣-支持-Tree-Shaking" class="headerlink" title="4️⃣ 支持 Tree Shaking"></a>4️⃣ 支持 Tree Shaking</h3><p>由于 ESM 是 <strong>静态结构</strong>，打包工具可以删除未使用代码。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> add = <span class="function">() =&gt;</span> &#123;&#125;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> sub = <span class="function">() =&gt;</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果只使用：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; add &#125; <span class="keyword">from</span> <span class="string">&#x27;./math&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>打包时，sub 会被删除。</p>
+<hr>
+<h1 id="三、CJS-vs-ESM-对比"><a href="#三、CJS-vs-ESM-对比" class="headerlink" title="三、CJS vs ESM 对比"></a>三、CJS vs ESM 对比</h1><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>CommonJS</th>
+<th>ESM</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>出现时间</td>
+<td>Node.js</td>
+<td>ES6</td>
+</tr>
+<tr>
+<td>导入</td>
+<td>require</td>
+<td>import</td>
+</tr>
+<tr>
+<td>导出</td>
+<td>module.exports</td>
+<td>export</td>
+</tr>
+<tr>
+<td>加载方式</td>
+<td>同步</td>
+<td>异步</td>
+</tr>
+<tr>
+<td>执行时机</td>
+<td>运行时</td>
+<td>编译时</td>
+</tr>
+<tr>
+<td>值类型</td>
+<td>值拷贝</td>
+<td>引用</td>
+</tr>
+<tr>
+<td>Tree Shaking</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td>浏览器支持</td>
+<td>不支持</td>
+<td>支持</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="四、Node-js-中使用-ESM"><a href="#四、Node-js-中使用-ESM" class="headerlink" title="四、Node.js 中使用 ESM"></a>四、Node.js 中使用 ESM</h1><p>Node.js 默认使用 <strong>CommonJS</strong>。如果要使用 ESM，有两种方式：</p>
+<h2 id="方式一：package-json"><a href="#方式一：package-json" class="headerlink" title="方式一：package.json"></a>方式一：package.json</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;type&quot;</span>: <span class="string">&quot;module&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后 <code>.js</code> 文件默认使用 ESM。</p>
+<hr>
+<h2 id="方式二：使用-mjs"><a href="#方式二：使用-mjs" class="headerlink" title="方式二：使用 .mjs"></a>方式二：使用 .mjs</h2><pre><code>index.mjs
+</code></pre>
+<hr>
+<h1 id="五、CJS-和-ESM-互相导入"><a href="#五、CJS-和-ESM-互相导入" class="headerlink" title="五、CJS 和 ESM 互相导入"></a>五、CJS 和 ESM 互相导入</h1><p>在 Node.js 中，两种模块系统可能共存。</p>
+<h2 id="1-ESM-导入-CJS"><a href="#1-ESM-导入-CJS" class="headerlink" title="1 ESM 导入 CJS"></a>1 ESM 导入 CJS</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pkg <span class="keyword">from</span> <span class="string">&#x27;./cjs.js&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>默认导出为 <code>module.exports</code>。</p>
+<hr>
+<h2 id="2-CJS-导入-ESM"><a href="#2-CJS-导入-ESM" class="headerlink" title="2 CJS 导入 ESM"></a>2 CJS 导入 ESM</h2><p>不能直接使用 <code>require()</code>，需要：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>(<span class="string">&#x27;./esm.js&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>动态导入。</p>
+<hr>
+<h1 id="六、ESM-对前端工程化的意义"><a href="#六、ESM-对前端工程化的意义" class="headerlink" title="六、ESM 对前端工程化的意义"></a>六、ESM 对前端工程化的意义</h1><p>现代打包工具更偏向使用 ESM，例如：</p>
+<ul>
+<li>  Vite</li>
+<li>  Rollup</li>
+<li>  ESBuild</li>
+<li>  Next.js</li>
+</ul>
+<p>原因如下：</p>
+<h3 id="1-Tree-Shaking"><a href="#1-Tree-Shaking" class="headerlink" title="1 Tree Shaking"></a>1 Tree Shaking</h3><p>删除未使用代码。</p>
+<h3 id="2-静态依赖分析"><a href="#2-静态依赖分析" class="headerlink" title="2 静态依赖分析"></a>2 静态依赖分析</h3><p>可以在编译阶段构建依赖图。</p>
+<h3 id="3-更好的代码分割"><a href="#3-更好的代码分割" class="headerlink" title="3 更好的代码分割"></a>3 更好的代码分割</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>(<span class="string">&#x27;./module&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="七、总结"><a href="#七、总结" class="headerlink" title="七、总结"></a>七、总结</h1><p><strong>CommonJS 和 ESM 的区别：</strong><br>CommonJS 是 Node.js 早期使用的模块规范，使用 <code>require</code> 和<code>module.exports</code>，模块是同步加载，运行时解析，导出的是值拷贝。<br>ESM 是 ES6 官方模块规范，使用 <code>import</code> 和<code>export</code>，模块在编译阶段进行静态分析，支持异步加载，导出的是引用，并且支持Tree Shaking。</p>
+<p>现代前端构建工具（如 Vite、Rollup）通常优先使用ESM，因为它可以在构建阶段进行更好的优化。</p>
+</div></article></div></main><footer><div class="paginator"><a href="/2021/08/25/options/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2026 <a href="https://sugar-mm.github.io">kong ling meng</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
