@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> AI 3D 短剧 Agent 工作台技术复盘：Next.js 全栈、Agent 状态机与多模型编排 · 梦鸽的博客</title><meta name="description" content="AI 3D 短剧 Agent 工作台技术复盘：Next.js 全栈、Agent 状态机与多模型编排 - kong ling meng"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://sugar-mm.github.io/atom.xml" title="梦鸽的博客"><meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="梦鸽的博客" type="application/atom+xml">
-</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="https://devflow.aiyly.com/" target="_blank" class="nav-list-link">AI</a></li><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">AI 3D 短剧 Agent 工作台技术复盘：Next.js 全栈、Agent 状态机与多模型编排</h1><div class="post-info">2026年5月14日</div><div class="post-content"><p>最近做了一个 AI 3D 短剧 Agent 工作台：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a>。</p>
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="https://devflow.aiyly.com/" target="_blank" class="nav-list-link">AI</a></li><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">AI 3D 短剧 Agent 工作台技术复盘：Next.js 全栈、Agent 状态机与多模型编排</h1><div class="post-info">2026年5月14日</div><div class="post-content"><p>项目地址：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a>。</p>
 <p>它的业务目标很简单：输入小说章节或短剧文本，系统拆解角色、空间、道具、场次和分镜，再生成资产图、3D 运镜预览和图生视频任务。功能层面可以概括成“文本 -&gt; 世界资产 -&gt; 分镜 -&gt; 3D 运镜 -&gt; 视频片段”。</p>
-<p>但这篇文章不重点讲功能，而是记录这个项目里更值得展开的技术实现：Next.js 全栈架构、Route Handlers 后端接口、Prisma + MySQL 数据模型、AgentRun / AgentStep 状态机、AI Provider 抽象、Three.js 预览、任务恢复，以及 Docker + GitLab CI/CD 部署。</p>
+<p>系统实现重点包括：Next.js 全栈架构、Route Handlers 后端接口、Prisma + MySQL 数据模型、AgentRun / AgentStep 状态机、AI Provider 抽象、Three.js 预览、任务恢复，以及 Docker + GitLab CI/CD 部署。</p>
 <h2 id="整体技术架构"><a href="#整体技术架构" class="headerlink" title="整体技术架构"></a>整体技术架构</h2><p>项目是一个 Next.js 全栈应用，前端页面、服务端 API、Agent 编排、数据库访问、OAuth 登录和部署配置都在同一个工程里。</p>
 <p>核心技术栈：</p>
 <ul>
@@ -23,7 +23,7 @@
 <p>整体链路如下：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">React 页面</span><br><span class="line">  -&gt; Next.js Route Handlers</span><br><span class="line">  -&gt; AgentRun / AgentStep 状态机</span><br><span class="line">  -&gt; AI Provider 层</span><br><span class="line">  -&gt; Prisma / MySQL</span><br><span class="line">  -&gt; 本地资产存储与缩略图</span><br><span class="line">  -&gt; Three.js 预览 / 图片与视频任务结果</span><br></pre></td></tr></table></figure>
 
-<p>我把系统拆成几层：</p>
+<p>系统按职责拆成几层：</p>
 <ul>
 <li>UI 层：负责工作台交互、任务进度展示、资产编辑和 3D 预览。</li>
 <li>API 层：使用 Next Route Handlers 承接登录、剧本解析、生成任务、Agent 执行和资产管理。</li>
@@ -164,7 +164,7 @@
 <li>可以让用户在关键节点确认后再继续。</li>
 <li>可以把长任务拆成多个短事务。</li>
 </ul>
-<h2 id="Agent-设计：模板计划-状态机，而不是黑盒自由-Agent"><a href="#Agent-设计：模板计划-状态机，而不是黑盒自由-Agent" class="headerlink" title="Agent 设计：模板计划 + 状态机，而不是黑盒自由 Agent"></a>Agent 设计：模板计划 + 状态机，而不是黑盒自由 Agent</h2><p>这个项目里我没有一开始就引入复杂 Agent 框架，而是先实现了一个轻量可控的工作流 Agent。</p>
+<h2 id="Agent-设计：模板计划-状态机，而不是黑盒自由-Agent"><a href="#Agent-设计：模板计划-状态机，而不是黑盒自由-Agent" class="headerlink" title="Agent 设计：模板计划 + 状态机，而不是黑盒自由 Agent"></a>Agent 设计：模板计划 + 状态机，而不是黑盒自由 Agent</h2><p>这个项目没有一开始引入复杂 Agent 框架，而是先实现了一个轻量可控的工作流 Agent。</p>
 <p>原因很直接：短剧生成链路强依赖业务数据、资产关系、用户确认和成本控制。如果完全交给模型自由规划，很容易出现不可控的工具调用和难以恢复的状态。</p>
 <p>所以当前 Agent 采用：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AgentRunType</span><br><span class="line">  -&gt; buildInitialAgentPlan</span><br><span class="line">  -&gt; AgentStep[]</span><br><span class="line">  -&gt; executor 按顺序执行</span><br><span class="line">  -&gt; 写入 outputJson / errorMessage</span><br><span class="line">  -&gt; 更新 run.status 和 currentStepId</span><br></pre></td></tr></table></figure>
@@ -303,7 +303,7 @@
 <li><code>aigc-video-studio-migrate</code>：数据库迁移服务。</li>
 </ul>
 <p>这种拆法的好处是生产镜像不会携带完整开发环境，迁移也不会和应用启动强耦合。</p>
-<h2 id="这个项目里比较有价值的技术点"><a href="#这个项目里比较有价值的技术点" class="headerlink" title="这个项目里比较有价值的技术点"></a>这个项目里比较有价值的技术点</h2><p>从技术角度看，我认为这个项目最值得总结的是下面几件事：</p>
+<h2 id="这个项目里比较有价值的技术点"><a href="#这个项目里比较有价值的技术点" class="headerlink" title="这个项目里比较有价值的技术点"></a>这个项目里比较有价值的技术点</h2><p>从技术角度看，这个项目最值得总结的是下面几件事：</p>
 <h3 id="1-Agent-不一定要一开始就上复杂框架"><a href="#1-Agent-不一定要一开始就上复杂框架" class="headerlink" title="1. Agent 不一定要一开始就上复杂框架"></a>1. Agent 不一定要一开始就上复杂框架</h3><p>对于业务步骤明确、状态要求强、需要用户确认的系统，模板计划 + 状态机 + 工具函数，比自由 Agent 更稳定。</p>
 <p>后续如果分支、循环、并行工具调用变复杂，再引入 LangGraph.js 这类状态图框架会更自然。</p>
 <h3 id="2-AI-应用要优先设计“中间态”"><a href="#2-AI-应用要优先设计“中间态”" class="headerlink" title="2. AI 应用要优先设计“中间态”"></a>2. AI 应用要优先设计“中间态”</h3><p>很多 AI Demo 只保存最终结果，但真实工具更需要中间态：</p>
@@ -330,7 +330,7 @@
 </ul>
 <h3 id="4-Provider-抽象能降低后续换模型成本"><a href="#4-Provider-抽象能降低后续换模型成本" class="headerlink" title="4. Provider 抽象能降低后续换模型成本"></a>4. Provider 抽象能降低后续换模型成本</h3><p>模型变化很快，业务代码如果直接绑定某个厂商的字段，很快会变得难维护。</p>
 <p>把模型能力封装成 Provider 后，Agent 和页面只依赖内部统一接口，后续替换模型会轻很多。</p>
-<h2 id="后续技术规划"><a href="#后续技术规划" class="headerlink" title="后续技术规划"></a>后续技术规划</h2><p>后续我会优先补齐这些技术能力：</p>
+<h2 id="后续技术规划"><a href="#后续技术规划" class="headerlink" title="后续技术规划"></a>后续技术规划</h2><p>后续优先补齐这些技术能力：</p>
 <ul>
 <li>额度购买、订单支付和套餐系统。</li>
 <li>更完整的视频任务队列。</li>
