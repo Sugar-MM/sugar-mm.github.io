@@ -155,13 +155,12 @@
 <li><code>generate_final_report</code></li>
 </ul>
 <p>我没有一开始就引入复杂 Agent 框架，而是先做“模板计划 + 工具执行 + 状态机”的方式。对这个项目来说，稳定、可追踪、可恢复，比让模型自由调用工具更重要。</p>
-<h3 id="登录、积分和安全"><a href="#登录、积分和安全" class="headerlink" title="登录、积分和安全"></a>登录、积分和安全</h3><p>项目接入了 Google OAuth，用户登录后自动创建账号。</p>
-<p>积分系统目前用于记录生成成本：</p>
+<h3 id="登录、额度和安全"><a href="#登录、额度和安全" class="headerlink" title="登录、额度和安全"></a>登录、额度和安全</h3><p>项目接入了 Google OAuth，用户登录后自动创建账号。</p>
+<p>额度系统用于管理 AI 生成成本和任务使用边界：</p>
 <ul>
-<li>文生图 4 张候选：扣 8 credits。</li>
-<li>二次编辑：扣 4 credits。</li>
-<li>资产主图、分镜图、视频任务也有独立成本常量。</li>
-<li>生成失败、配置错误或额度耗尽时不扣积分。</li>
+<li>图片生成、图片编辑、资产主图、分镜图和视频任务都有独立的成本记录。</li>
+<li>生成失败、配置错误或额度耗尽时不会记录为成功消耗。</li>
+<li>当前项目还没有开放付费购买额度，后续会接入付费与订单模块。</li>
 </ul>
 <p>API Key 只存在服务端环境变量中。所有模型调用都走 Route Handlers，不会暴露到浏览器端。</p>
 <h3 id="Docker-与-CI-CD-部署"><a href="#Docker-与-CI-CD-部署" class="headerlink" title="Docker 与 CI/CD 部署"></a>Docker 与 CI/CD 部署</h3><p>项目已经完成生产环境部署，线上地址是：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a>。</p>
@@ -176,9 +175,9 @@
 <li><code>/uploads/</code> 静态资源目录独立挂载。</li>
 <li>生产环境变量通过 GitLab CI/CD File 类型变量注入。</li>
 </ul>
-<p>这部分对我来说很重要，因为它让项目不是停留在本地 Demo，而是真正跑到了生产环境里。</p>
-<h2 id="如何使用？"><a href="#如何使用？" class="headerlink" title="如何使用？"></a>如何使用？</h2><p>访问：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a></p>
-<h3 id="第一步：登录"><a href="#第一步：登录" class="headerlink" title="第一步：登录"></a>第一步：登录</h3><p>使用 Google OAuth 登录。登录后系统会自动创建用户，并进入可操作的工作台。</p>
+<h2 id="产品流程"><a href="#产品流程" class="headerlink" title="产品流程"></a>产品流程</h2><p>项目线上地址：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a></p>
+<p>当前线上版本主要用于项目展示和流程验证。由于图片、视频和文本模型都会产生真实调用成本，暂未开放公开付费使用，后续会接入额度购买、订单和更完整的商业化流程。</p>
+<h3 id="第一步：登录与账户初始化"><a href="#第一步：登录与账户初始化" class="headerlink" title="第一步：登录与账户初始化"></a>第一步：登录与账户初始化</h3><p>使用 Google OAuth 登录。登录后系统会自动创建用户，并进入可操作的工作台。</p>
 <h3 id="第二步：选择创作路径"><a href="#第二步：选择创作路径" class="headerlink" title="第二步：选择创作路径"></a>第二步：选择创作路径</h3><p>可以从 Agent 导演台开始，也可以手动进入分步工作台：</p>
 <ul>
 <li>Agent 导演台：适合一键推进完整流程。</li>
@@ -258,6 +257,7 @@
 </tbody></table>
 <h2 id="未来展望"><a href="#未来展望" class="headerlink" title="未来展望"></a>未来展望</h2><p>接下来我希望继续完善几个方向：</p>
 <ul>
+<li>额度购买、订单支付和用户套餐。</li>
 <li>更完整的视频任务队列和状态同步。</li>
 <li>角色语音包、对白配音和字幕生成。</li>
 <li>多视频片段排序和成片导出。</li>
@@ -268,6 +268,4 @@
 <li>团队协作和分享能力。</li>
 </ul>
 <p>最终目标不是做一个“生成按钮”，而是做一个 AI 短剧制作工作台：让小说、剧本、角色、空间、分镜、镜头、视频和声音都能被统一组织起来。</p>
-<h2 id="立即体验"><a href="#立即体验" class="headerlink" title="立即体验"></a>立即体验</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a></p>
-<p>如果你对 AI Agent、AIGC 视频、Next.js 全栈应用或 Three.js 运镜预览感兴趣，可以打开体验一下。这个项目还在持续迭代，我也会继续把它当作一个真实产品来完善，而不是只停留在技术练习。</p>
 </div></article></div></main><footer><div class="paginator"><a href="/2026/04/13/TypeScript/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2026 <a href="https://sugar-mm.github.io">kong ling meng</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
