@@ -1,0 +1,273 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> AI 3D 短剧 Agent 工作台：从小说到视频片段的全流程创作系统 · 梦鸽的博客</title><meta name="description" content="AI 3D 短剧 Agent 工作台：从小说到视频片段的全流程创作系统 - kong ling meng"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/favicon.png"><link rel="stylesheet" href="/css/apollo.css"><link rel="search" type="application/opensearchdescription+xml" href="https://sugar-mm.github.io/atom.xml" title="梦鸽的博客"><meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="梦鸽的博客" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="https://devflow.aiyly.com/" target="_blank" class="nav-list-link">AI</a></li><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">BLOG</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">ARCHIVE</a></li><li class="nav-list-item"><a href="/about/" target="_self" class="nav-list-link">ABOUT</a></li></ul></header><main class="container"><div class="post"><article class="post-block"><h1 class="post-title">AI 3D 短剧 Agent 工作台：从小说到视频片段的全流程创作系统</h1><div class="post-info">2026年5月14日</div><div class="post-content"><p>最近我做了一个个人 AI 项目：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">AI 3D 短剧 Agent 工作台</a>。</p>
+<p>它不是一个单点的文生图 Demo，也不是简单把一段 Prompt 扔给视频模型，而是一个面向 AI 短剧生产链路的 Web 全栈项目：用户输入小说章节或剧本文本，系统自动拆解角色、空间、道具和场次，生成世界资产、结构化分镜、Three.js 运镜预览，并接入图生视频任务，完成从文本到视频片段的闭环。</p>
+<p>我希望它解决的是一个更具体的问题：AI 视频生成越来越强，但如果没有稳定的角色、场景、分镜和镜头结构，最后很容易变成“一次性生成”。这个项目尝试把短剧创作拆成可追踪、可确认、可恢复的工作流，让 AI 不只是生成结果，而是参与制作流程。</p>
+<h2 id="什么是-AI-3D-短剧-Agent-工作台？"><a href="#什么是-AI-3D-短剧-Agent-工作台？" class="headerlink" title="什么是 AI 3D 短剧 Agent 工作台？"></a>什么是 AI 3D 短剧 Agent 工作台？</h2><p><a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">AI 3D 短剧 Agent 工作台</a> 是一个面向短剧创作的 AI Agent 平台。</p>
+<p>它的核心链路可以概括为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">小说/剧本 -&gt; 世界资产 -&gt; 分镜 -&gt; 3D 运镜方案 -&gt; 图生视频任务 -&gt; 视频片段</span><br></pre></td></tr></table></figure>
+
+<p>用户可以输入小说章节或短剧剧本，系统会根据目标创建一个 AgentRun，把任务拆成多个 AgentStep，并按顺序执行：</p>
+<ol>
+<li>精简小说或转换剧本。</li>
+<li>结构化解析角色、空间、道具、场次。</li>
+<li>等待用户确认世界资产。</li>
+<li>生成角色、空间、道具主图。</li>
+<li>生成结构化分镜和分镜主视觉图。</li>
+<li>生成 3D 运镜方案。</li>
+<li>创建图生视频任务并同步视频结果。</li>
+</ol>
+<p>和传统“一键生成视频”不同，这个项目更强调中间资产的可编辑和可复用。角色图、空间图、道具图、场次、分镜和视频任务都会落到 MySQL 中，后续可以继续编辑、重试和恢复。</p>
+<h2 id="核心特性"><a href="#核心特性" class="headerlink" title="核心特性"></a>核心特性</h2><h3 id="1-从小说或剧本生成短剧世界"><a href="#1-从小说或剧本生成短剧世界" class="headerlink" title="1. 从小说或剧本生成短剧世界"></a>1. 从小说或剧本生成短剧世界</h3><p>用户输入一段小说章节或剧本文本后，系统会先调用文本模型进行结构化解析，提取短剧制作所需的基础元素：</p>
+<ul>
+<li>故事设定</li>
+<li>人物关系</li>
+<li>角色</li>
+<li>空间</li>
+<li>道具</li>
+<li>场次</li>
+<li>空间关系</li>
+<li>视觉重点</li>
+</ul>
+<p>这些内容不是临时字符串，而会沉淀成 <code>ScriptAnalysis</code>、<code>WorldAsset</code>、<code>WorldScene</code> 等数据结构。后续生成资产图、分镜图、3D 运镜和视频任务，都基于这套结构化结果继续推进。</p>
+<h3 id="2-世界资产可确认、可复用"><a href="#2-世界资产可确认、可复用" class="headerlink" title="2. 世界资产可确认、可复用"></a>2. 世界资产可确认、可复用</h3><p>短剧生成最怕角色和场景不稳定，所以我没有让系统在解析后立刻一路自动生成到底，而是在“确认世界资产”这一步让 Agent 暂停。</p>
+<p>用户可以先检查角色、空间、道具是否完整，再继续生成图片资产。这样可以避免模型理解偏差，也能减少不必要的生成成本。</p>
+<p>资产层目前覆盖：</p>
+<ul>
+<li>角色资产</li>
+<li>空间资产</li>
+<li>道具资产</li>
+<li>资产提示词</li>
+<li>资产主图</li>
+<li>多候选图</li>
+<li>手动上传图片</li>
+<li>主图选择</li>
+</ul>
+<p>当角色、空间和道具拥有稳定主图后，后续分镜图和视频生成就不再是孤立 Prompt，而是可以引用这些资产关系。</p>
+<h3 id="3-AgentRun-AgentStep-状态机"><a href="#3-AgentRun-AgentStep-状态机" class="headerlink" title="3. AgentRun / AgentStep 状态机"></a>3. AgentRun / AgentStep 状态机</h3><p>这个项目的核心不是“调一次模型”，而是手写了一个轻量工作流 Agent。</p>
+<p>每次任务会创建一个 <code>AgentRun</code>，再根据任务类型生成一组 <code>AgentStep</code>。每一步都有自己的状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pending -&gt; running -&gt; waiting_user_confirm -&gt; succeeded</span><br><span class="line">                  -&gt; failed</span><br><span class="line">                  -&gt; skipped</span><br></pre></td></tr></table></figure>
+
+<p>AgentRun 也有自己的全局状态：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">draft / pending / running / waiting_user_confirm / succeeded / failed / cancelled</span><br></pre></td></tr></table></figure>
+
+<p>这样设计的好处是：</p>
+<ul>
+<li>用户可以看到任务执行到哪一步。</li>
+<li>长任务不用依赖一个超长 HTTP 请求。</li>
+<li>关键节点可以等待用户确认。</li>
+<li>失败步骤可以单独重试。</li>
+<li>已成功的中间产物不会丢失。</li>
+<li>历史任务可以恢复和继续查看。</li>
+</ul>
+<p>这也是我认为它更像 Agent 项目的原因：模型负责理解和生成，系统负责规划、编排、状态流转、工具调用和结果持久化。</p>
+<h3 id="4-分镜和-3D-运镜预览"><a href="#4-分镜和-3D-运镜预览" class="headerlink" title="4. 分镜和 3D 运镜预览"></a>4. 分镜和 3D 运镜预览</h3><p>在短剧场景里，只有文字分镜还不够。真正影响视频效果的是：</p>
+<ul>
+<li>人物站位</li>
+<li>空间关系</li>
+<li>镜头注视点</li>
+<li>焦段</li>
+<li>镜头运动</li>
+<li>分镜主视觉</li>
+<li>参考资产</li>
+</ul>
+<p>所以项目里单独做了 3D 运镜预览器。它会根据场次地点、人物、道具、空间关系和分镜数据，生成基础站位与摄像机路径，让“镜头怎么走”变成可视化信息。</p>
+<p>这一步目前不是为了做复杂 3D 建模，而是为了给后续视频模型提供更稳定的导演信息：视频模型不只拿到一句描述，还能拿到场次、镜头、角色和空间关系。</p>
+<h3 id="5-图片生成、图生图和视频任务"><a href="#5-图片生成、图生图和视频任务" class="headerlink" title="5. 图片生成、图生图和视频任务"></a>5. 图片生成、图生图和视频任务</h3><p>项目当前接入了 Doubao Seedream 系列图片模型，支持：</p>
+<ul>
+<li>文生图</li>
+<li>一次生成 4 张候选图</li>
+<li>图生图二次编辑</li>
+<li>资产主图生成</li>
+<li>分镜主视觉生成</li>
+<li>生成历史保存</li>
+<li>图片下载代理</li>
+<li>缩略图生成</li>
+</ul>
+<p>视频侧接入了 Seedance 图生视频任务。Agent 在生成分镜图后，可以根据主分镜图和视频提示词创建视频任务，并在后续同步视频结果。</p>
+<h2 id="技术架构详解"><a href="#技术架构详解" class="headerlink" title="技术架构详解"></a>技术架构详解</h2><p>这个项目是一个 Next.js 全栈应用，前端、后端 API、Agent 编排、数据库、登录和部署都在同一个工程内完成。</p>
+<h3 id="前端与全栈框架"><a href="#前端与全栈框架" class="headerlink" title="前端与全栈框架"></a>前端与全栈框架</h3><p>项目使用：</p>
+<ul>
+<li>Next.js 16 App Router</li>
+<li>React 19</li>
+<li>TypeScript</li>
+<li>Tailwind CSS</li>
+<li>Three.js</li>
+</ul>
+<p>页面层包括：</p>
+<ul>
+<li>首页产品入口</li>
+<li>Agent 导演台</li>
+<li>剧本解析工作台</li>
+<li>世界资产编辑器</li>
+<li>3D 运镜预览器</li>
+<li>图片视频生成工作台</li>
+<li>登录页</li>
+<li>项目介绍页</li>
+</ul>
+<p>Next.js App Router 负责页面组织，Route Handlers 负责服务端 API。图片生成、剧本解析、Agent 执行、视频任务、资产管理都通过后端接口完成，不把密钥和模型调用暴露到前端。</p>
+<h3 id="数据库层"><a href="#数据库层" class="headerlink" title="数据库层"></a>数据库层</h3><p>项目使用 Prisma + MySQL。核心表包括：</p>
+<ul>
+<li><code>User</code>：用户和积分余额。</li>
+<li><code>GenerationJob</code>：图片生成、编辑等任务。</li>
+<li><code>GenerationCandidate</code>：一次生成的候选图。</li>
+<li><code>Asset</code>：图片、视频等资产。</li>
+<li><code>AssetVersion</code>：二次编辑版本关系。</li>
+<li><code>CreditTransaction</code>：积分流水。</li>
+<li><code>ScriptAnalysis</code>：剧本结构化解析结果。</li>
+<li><code>WorldAsset</code>：角色、空间、道具资产。</li>
+<li><code>WorldScene</code>：场次。</li>
+<li><code>SceneStoryboard</code>：分镜。</li>
+<li><code>AgentRun</code>：Agent 任务。</li>
+<li><code>AgentStep</code>：Agent 步骤。</li>
+</ul>
+<p>这套数据模型的重点是把 AI 生成过程拆成可管理的业务对象。后续无论是做历史记录、失败重试、视频同步，还是做更复杂的项目工作区，都有清晰的数据基础。</p>
+<h3 id="AI-Provider-层"><a href="#AI-Provider-层" class="headerlink" title="AI Provider 层"></a>AI Provider 层</h3><p>项目没有把模型调用散落在页面里，而是做了 Provider 抽象：</p>
+<ul>
+<li>Qwen：文本理解、小说精简、小说转剧本、剧本结构化解析、分镜生成。</li>
+<li>Doubao Seedream：角色、空间、道具、分镜图等图片生成。</li>
+<li>Doubao Seedance：图生视频任务。</li>
+</ul>
+<p>这种抽象的好处是后续可以继续替换或增加模型，比如接入更多文本模型、视频模型或 3D Provider，而不需要重写业务流程。</p>
+<h3 id="Agent-编排层"><a href="#Agent-编排层" class="headerlink" title="Agent 编排层"></a>Agent 编排层</h3><p>Agent 编排层主要由三部分组成：</p>
+<ol>
+<li>Plan：根据任务类型生成执行计划。</li>
+<li>Executor：按步骤执行工具调用。</li>
+<li>State：用 MySQL 持久化 AgentRun 和 AgentStep。</li>
+</ol>
+<p>当前支持的任务类型包括：</p>
+<ul>
+<li>小说转视频预视觉</li>
+<li>剧本转视频预视觉</li>
+<li>世界资产生成</li>
+<li>分镜生成</li>
+<li>视频生成</li>
+</ul>
+<p>当前支持的核心步骤包括：</p>
+<ul>
+<li><code>condense_novel</code></li>
+<li><code>convert_novel_to_script</code></li>
+<li><code>analyze_script</code></li>
+<li><code>confirm_world_assets</code></li>
+<li><code>generate_world_asset_images</code></li>
+<li><code>generate_scene_storyboards</code></li>
+<li><code>build_scene_director_plan</code></li>
+<li><code>generate_video_clips</code></li>
+<li><code>generate_final_report</code></li>
+</ul>
+<p>我没有一开始就引入复杂 Agent 框架，而是先做“模板计划 + 工具执行 + 状态机”的方式。对这个项目来说，稳定、可追踪、可恢复，比让模型自由调用工具更重要。</p>
+<h3 id="登录、积分和安全"><a href="#登录、积分和安全" class="headerlink" title="登录、积分和安全"></a>登录、积分和安全</h3><p>项目接入了 Google OAuth，用户登录后自动创建账号。</p>
+<p>积分系统目前用于记录生成成本：</p>
+<ul>
+<li>文生图 4 张候选：扣 8 credits。</li>
+<li>二次编辑：扣 4 credits。</li>
+<li>资产主图、分镜图、视频任务也有独立成本常量。</li>
+<li>生成失败、配置错误或额度耗尽时不扣积分。</li>
+</ul>
+<p>API Key 只存在服务端环境变量中。所有模型调用都走 Route Handlers，不会暴露到浏览器端。</p>
+<h3 id="Docker-与-CI-CD-部署"><a href="#Docker-与-CI-CD-部署" class="headerlink" title="Docker 与 CI/CD 部署"></a>Docker 与 CI/CD 部署</h3><p>项目已经完成生产环境部署，线上地址是：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a>。</p>
+<p>部署链路包括：</p>
+<ul>
+<li>Docker 多阶段构建。</li>
+<li>Next.js standalone 运行镜像。</li>
+<li>独立 migrator 镜像执行 Prisma <code>db push</code>。</li>
+<li>GitLab CI/CD 自动构建、推送镜像和部署。</li>
+<li>Docker Compose 管理服务。</li>
+<li>Nginx 反向代理。</li>
+<li><code>/uploads/</code> 静态资源目录独立挂载。</li>
+<li>生产环境变量通过 GitLab CI/CD File 类型变量注入。</li>
+</ul>
+<p>这部分对我来说很重要，因为它让项目不是停留在本地 Demo，而是真正跑到了生产环境里。</p>
+<h2 id="如何使用？"><a href="#如何使用？" class="headerlink" title="如何使用？"></a>如何使用？</h2><p>访问：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a></p>
+<h3 id="第一步：登录"><a href="#第一步：登录" class="headerlink" title="第一步：登录"></a>第一步：登录</h3><p>使用 Google OAuth 登录。登录后系统会自动创建用户，并进入可操作的工作台。</p>
+<h3 id="第二步：选择创作路径"><a href="#第二步：选择创作路径" class="headerlink" title="第二步：选择创作路径"></a>第二步：选择创作路径</h3><p>可以从 Agent 导演台开始，也可以手动进入分步工作台：</p>
+<ul>
+<li>Agent 导演台：适合一键推进完整流程。</li>
+<li>剧本解析工作台：适合手动拆解小说或剧本。</li>
+<li>3D 运镜预览器：适合查看场次站位和镜头路径。</li>
+<li>图片视频生成工作台：适合独立生成图片、编辑图片和管理历史。</li>
+</ul>
+<h3 id="第三步：输入小说或剧本"><a href="#第三步：输入小说或剧本" class="headerlink" title="第三步：输入小说或剧本"></a>第三步：输入小说或剧本</h3><p>输入一段小说章节或短剧剧本文本，填写目标后创建 AgentRun。</p>
+<p>如果是小说，系统会先精简并转换为短剧剧本；如果已经是剧本，则直接进入结构化解析。</p>
+<h3 id="第四步：确认世界资产"><a href="#第四步：确认世界资产" class="headerlink" title="第四步：确认世界资产"></a>第四步：确认世界资产</h3><p>系统解析出角色、空间和道具后，会进入等待确认状态。你可以检查资产是否完整，然后继续执行。</p>
+<h3 id="第五步：生成资产、分镜和视频任务"><a href="#第五步：生成资产、分镜和视频任务" class="headerlink" title="第五步：生成资产、分镜和视频任务"></a>第五步：生成资产、分镜和视频任务</h3><p>确认后，Agent 会继续生成资产主图、场次分镜、分镜主视觉、3D 运镜方案，并创建图生视频任务。</p>
+<h2 id="错误处理和任务恢复"><a href="#错误处理和任务恢复" class="headerlink" title="错误处理和任务恢复"></a>错误处理和任务恢复</h2><p>AIGC 任务很容易遇到额度、网络、模型返回格式、图片地址过期等问题，所以这个项目从一开始就没有把流程设计成“一次请求跑到底”。</p>
+<p>当前机制包括：</p>
+<ul>
+<li>每一步都有独立状态。</li>
+<li>失败时记录错误信息。</li>
+<li>失败步骤支持重试。</li>
+<li>已成功步骤不会被覆盖。</li>
+<li>关键节点可等待用户确认。</li>
+<li>历史任务可重新查看。</li>
+<li>生成图片会转存为本地资产，减少外部 URL 失效影响。</li>
+<li>列表和卡片优先读取缩略图，详情和下载再读取原图。</li>
+</ul>
+<p>这种设计虽然比简单 Demo 更复杂，但它更接近真实生产工具。</p>
+<h2 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h2><h3 id="1-AI-短剧创作者"><a href="#1-AI-短剧创作者" class="headerlink" title="1. AI 短剧创作者"></a>1. AI 短剧创作者</h3><p>把小说、爽文、短剧脚本快速拆成角色、场景、分镜和视频片段，减少从文本到视觉方案的前期成本。</p>
+<h3 id="2-编导和分镜策划"><a href="#2-编导和分镜策划" class="headerlink" title="2. 编导和分镜策划"></a>2. 编导和分镜策划</h3><p>用它快速得到场次拆解、镜头运动、主视觉图和 3D 运镜草案，再人工精修。</p>
+<h3 id="3-AIGC-产品原型验证"><a href="#3-AIGC-产品原型验证" class="headerlink" title="3. AIGC 产品原型验证"></a>3. AIGC 产品原型验证</h3><p>这个项目可以作为 AIGC 工作流产品的原型，验证“用户确认 + 多模型协作 + 资产复用 + 状态机”的产品体验。</p>
+<h3 id="4-前端-全栈-AI-应用开发展示"><a href="#4-前端-全栈-AI-应用开发展示" class="headerlink" title="4. 前端 / 全栈 / AI 应用开发展示"></a>4. 前端 / 全栈 / AI 应用开发展示</h3><p>项目覆盖 Next.js、Prisma、MySQL、OAuth、Docker、CI/CD、Three.js、AI Provider、Agent 状态机和生产部署，比较适合作为 AI 应用全栈能力展示。</p>
+<h2 id="与传统方式的对比"><a href="#与传统方式的对比" class="headerlink" title="与传统方式的对比"></a>与传统方式的对比</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>传统 AI 视频生成</th>
+<th>AI 3D 短剧 Agent 工作台</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>输入方式</td>
+<td>一段 Prompt</td>
+<td>小说章节或完整剧本</td>
+</tr>
+<tr>
+<td>过程控制</td>
+<td>黑盒生成</td>
+<td>分步骤执行，可确认、可重试</td>
+</tr>
+<tr>
+<td>角色一致性</td>
+<td>依赖 Prompt 描述</td>
+<td>角色资产主图可复用</td>
+</tr>
+<tr>
+<td>场景管理</td>
+<td>临时描述</td>
+<td>空间、道具、场次结构化保存</td>
+</tr>
+<tr>
+<td>分镜能力</td>
+<td>通常缺失</td>
+<td>自动生成结构化分镜</td>
+</tr>
+<tr>
+<td>运镜信息</td>
+<td>文本描述为主</td>
+<td>Three.js 可视化预览</td>
+</tr>
+<tr>
+<td>任务恢复</td>
+<td>失败后通常重来</td>
+<td>AgentStep 可单步重试</td>
+</tr>
+<tr>
+<td>工程化</td>
+<td>多为 Demo</td>
+<td>Docker + GitLab CI/CD + Nginx 生产部署</td>
+</tr>
+</tbody></table>
+<h2 id="未来展望"><a href="#未来展望" class="headerlink" title="未来展望"></a>未来展望</h2><p>接下来我希望继续完善几个方向：</p>
+<ul>
+<li>更完整的视频任务队列和状态同步。</li>
+<li>角色语音包、对白配音和字幕生成。</li>
+<li>多视频片段排序和成片导出。</li>
+<li>更强的角色一致性策略。</li>
+<li>更细的镜头语言控制。</li>
+<li>3D 资产生成或第三方 3D 工具接入。</li>
+<li>项目式工作区，让一个短剧项目管理多集、多场次、多资产。</li>
+<li>团队协作和分享能力。</li>
+</ul>
+<p>最终目标不是做一个“生成按钮”，而是做一个 AI 短剧制作工作台：让小说、剧本、角色、空间、分镜、镜头、视频和声音都能被统一组织起来。</p>
+<h2 id="立即体验"><a href="#立即体验" class="headerlink" title="立即体验"></a>立即体验</h2><p>项目地址：<a target="_blank" rel="noopener" href="https://devflow.aiyly.com/">https://devflow.aiyly.com/</a></p>
+<p>如果你对 AI Agent、AIGC 视频、Next.js 全栈应用或 Three.js 运镜预览感兴趣，可以打开体验一下。这个项目还在持续迭代，我也会继续把它当作一个真实产品来完善，而不是只停留在技术练习。</p>
+</div></article></div></main><footer><div class="paginator"><a href="/2026/04/13/TypeScript/" class="next">NEXT</a></div><div class="copyright"><p>© 2015 - 2026 <a href="https://sugar-mm.github.io">kong ling meng</a>, powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and <a href="https://github.com/pinggod/hexo-theme-apollo" target="_blank">hexo-theme-apollo</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script></body></html>
